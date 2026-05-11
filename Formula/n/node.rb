@@ -174,6 +174,17 @@ class Node < Formula
     # args << "--enable-lto" if OS.mac? && DevelopmentTools.clang_build_version > 1699 && build.bottle?
 
     system "./configure", *args
+
+    if OS.mac? && deps.map(&:name).any?("llvm")
+      llvm_libcxx_dylib = Formula["llvm"].opt_lib/"c++/libc++.dylib"
+      Dir["out/**/*.mk"].each do |mk|
+        makefile = Pathname(mk)
+        contents = makefile.read
+        contents = contents.gsub(/^LIBS := \\\n/, "LIBS := \\\n\t#{llvm_libcxx_dylib} \\\n")
+        makefile.atomic_write contents
+      end
+    end
+
     system "make", "install"
 
     # Allow npm to find Node before installation has completed.

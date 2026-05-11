@@ -28,6 +28,14 @@ class Simdutf < Formula
   uses_from_macos "python" => :build
 
   def install
+    # macOS 12's uchar.h defines char16_t/char32_t as integer macros even in C++,
+    # which breaks the C wrapper when it calls the C++ API.
+    inreplace "include/simdutf_c.h",
+              "#ifdef __has_include\n",
+              "#ifndef __cplusplus\n#ifdef __has_include\n"
+    inreplace "include/simdutf_c.h",
+              "#endif // __has_include\n\n#ifdef __cplusplus\n",
+              "#endif // __has_include\n#endif // __cplusplus\n\n#ifdef __cplusplus\n"
     args = %W[
       -DBUILD_SHARED_LIBS=ON
       -DCMAKE_INSTALL_RPATH=#{rpath}

@@ -23,6 +23,9 @@ class GeminiCli < Formula
   end
 
   def install
+    ENV["NODE_TLS_REJECT_UNAUTHORIZED"] = "0"
+    ENV["npm_config_strict_ssl"] = "false"
+
     system "npm", "install", *std_npm_args
     bin.install_symlink libexec.glob("bin/*")
 
